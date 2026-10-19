@@ -1,13 +1,29 @@
+
 import mongoose from 'mongoose';
 
 export const connectDB = async () => {
   try {
-    const conn = await mongoose.connect(process.env.MONGO_URI, {
-      serverSelectionTimeoutMS: 5000,
+    const mongoUri = process.env.MONGO_URI;
+
+    if (!mongoUri) {
+      throw new Error('MONGO_URI environment variable is missing');
+    }
+
+    const conn = await mongoose.connect(mongoUri, {
+      serverSelectionTimeoutMS: 10000,
     });
-    console.log(`[Database] MongoDB Connected: ${conn.connection.host}`);
+
+    console.log(
+      `[Database] MongoDB Connected: ${conn.connection.host}`
+    );
+
+    return conn;
   } catch (error) {
-    console.error(`[Database Error] Connection Failed: ${error.message}`);
-    console.log('[Database Notice] Please verify your MONGO_URI in backend/.env if MongoDB Atlas is not yet running.');
+    console.error(
+      `[Database Error] Connection Failed: ${error.message}`
+    );
+
+    // Stop startup if the database connection fails.
+    throw error;
   }
 };
