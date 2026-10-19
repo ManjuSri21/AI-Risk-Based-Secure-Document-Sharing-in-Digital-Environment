@@ -1,11 +1,9 @@
-﻿import express from 'express';
+
+import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
-import http from 'http';
-import path from 'path';
-import { fileURLToPath } from 'url';
 
 import { connectDB } from './config/db.js';
 import authRoutes from './routes/authRoutes.js';
@@ -14,18 +12,18 @@ import shareRoutes from './routes/shareRoutes.js';
 import auditRoutes from './routes/auditRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
 // Load environment variables
 dotenv.config();
 
 const app = express();
 
-// Connect Database
-connectDB();
+// Trust Render's reverse proxy for client IP and rate limiting.
+// Render runs behind a proxy; trust one proxy hop.
+if (process.env.NODE_ENV === 'production') {
+  app.set('trust proxy', 1);
+}
 
-// Security Middlewares
+// Security middleware
 app.use(
   helmet({
     crossOriginResourcePolicy: false,
@@ -42,31 +40,36 @@ const allowedOrigins = [
 app.use(
   cors({
     origin: (origin, callback) => {
+      // Allow requests without an Origin header, such as health checks.
       if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(null, true); // Permissive for academic local evaluation
+        return callback(null, true);
       }
+
+      return callback(new Error('Not allowed by CORS'));
     },
     credentials: true,
   })
 );
 
-// Rate Limiter
+// Rate limiter
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 1000, // Limit each IP
+  windowMs: 15 * 60 * 1000,
+  max: 200,
   standardHeaders: true,
   legacyHeaders: false,
-  message: { success: false, message: 'Too many requests from this IP, please try again later.' },
+  message: {
+    success: false,
+    message: 'Too many requests. Please try again later.',
+  },
 });
+
 app.use(limiter);
 
-// Body Parsing
+// Body parsing
 app.use(express.json({ limit: '25mb' }));
 app.use(express.urlencoded({ extended: true, limit: '25mb' }));
 
-// Health Check
+// Health check
 app.get('/api/health', (req, res) => {
   res.status(200).json({
     success: true,
@@ -75,73 +78,70 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// API Routes
+// API routes
 app.use('/api/auth', authRoutes);
 app.use('/api/documents', documentRoutes);
 app.use('/api/shares', shareRoutes);
 app.use('/api/audit', auditRoutes);
 app.use('/api/admin', adminRoutes);
 
-// 404 Handler
+// 404 handler
 app.use((req, res) => {
-  res.status(404).json({ success: false, message: `Route not found: ${req.originalUrl}` });
-});
-
-// Global Error Handler
-app.use((err, req, res, next) => {
-  console.error('[Internal Server Error]', err);
-  res.status(err.status || 500).json({
+  res.status(404).json({
     success: false,
-    message: err.message || 'Internal Server Error',
+    message: `Route not found: ${req.originalUrl}`,
   });
 });
 
+// Global error handler
+app.use((err, req, res, next) => {
+  if (res.headersSent) {
+    return next(err);
+  }
 
+  if (err.message === 'Not allowed by CORS') {
+    return res.status(403).json({
+      success: false,
+      message: 'Origin not allowed',
+    });
+  }
 
-const PORT = process.env.PORT || 5001;
-const server = app.listen(PORT, () => {
-  console.log(`[Server] SecureShare API running on port ${PORT} in ${process.env.NODE_ENV || 'development'} mode`);
-  console.log(`[Server] Health check available at: http://localhost:${PORT}/api/health`);
+  console.error('[Internal Server Error]', err);
+
+  res.status(err.status || 500).json({
+    success: false,
+    message:
+      process.env.NODE_ENV === 'production'
+        ? 'Internal Server Error'
+        : err.message || 'Internal Server Error',
+  });
 });
 
-server.on('error', (err) => {
-  if (err.code === 'EADDRINUSE') {
-    const healthCheck = http.get(
-      { hostname: '127.0.0.1', port: PORT, path: '/api/health', timeout: 2000 },
-      (response) => {
-        let body = '';
-        response.setEncoding('utf8');
-        response.on('data', (chunk) => {
-          body += chunk;
-        });
-        response.on('end', () => {
-          let isSecureShare = false;
-          try {
-            const health = JSON.parse(body);
-            isSecureShare =
-              response.statusCode === 200 &&
-              health.message === 'SecureShare Backend API is active';
-          } catch {
-            isSecureShare = false;
-          }
+// Start server
+const PORT = process.env.PORT || 5001;
 
-          if (isSecureShare) {
-            console.log(`[Server] SecureShare is already running at http://localhost:${PORT}/api/health`);
-            process.exit(0);
-          }
+async function startServer() {
+  try {
+    // Wait for MongoDB before accepting API requests.
+    await connectDB();
 
-          console.error(`[Server] Port ${PORT} is occupied by another service. Stop that service or set a different PORT.`);
-          process.exit(1);
-        });
-      }
-    );
+    const server = app.listen(PORT, '0.0.0.0', () => {
+      console.log(
+        `[Server] SecureShare API running on port ${PORT} in ${
+          process.env.NODE_ENV || 'development'
+        } mode`
+      );
+      console.log('[Server] Health endpoint: /api/health');
+    });
 
-    healthCheck.on('timeout', () => healthCheck.destroy(new Error('Health check timed out')));
-    healthCheck.on('error', () => {
-      console.error(`[Server] Port ${PORT} is already in use, but the service could not be identified. Stop the process using that port or configure a different PORT.`);
+    server.on('error', (err) => {
+      console.error('[Server] Failed to start:', err.message);
       process.exit(1);
     });
-  } else {
-    throw err;
+  } catch (err) {
+    console.error('[Server] Startup failed:', err.message);
+    process.exit(1);
   }
-});
+}
+
+startServer();
