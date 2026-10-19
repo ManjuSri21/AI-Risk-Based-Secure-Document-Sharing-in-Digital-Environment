@@ -564,9 +564,7 @@ cd ai-risk-based-secure-document-sharing
 ---
 ## 14. 🚀 Live Demo
 
-- **Frontend (Live Website):** [RiskGuard Share](https://ai-risk-based-secure-document-shari.vercel.app/)
-- **Backend API:** [Render Backend](https://secureshare-ai-rqbg.onrender.com)
-- **API Health Check:** [Check Backend Status](https://secureshare-ai-rqbg.onrender.com/api/health)
+- **Live Website:** [SecureShare](https://ai-risk-based-secure-document-shari.vercel.app/)
 
 ## 🛠️ Deployment
 
