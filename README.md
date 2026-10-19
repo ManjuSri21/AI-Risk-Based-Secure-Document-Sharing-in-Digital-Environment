@@ -6,7 +6,7 @@
 [![AI / ML](https://img.shields.io/badge/AI%20%2F%20ML-Scikit--Learn%20%7C%20Tesseract%20OCR-F7931E?logo=scikit-learn)](https://scikit-learn.org/)
 [![Security](https://img.shields.io/badge/Security-Adaptive%20Policy%20%7C%20MFA%20%7C%20AES--256-blueviolet?logo=shield)](https://owasp.org/)
 
-**SecureShare AI** (SecureShare) is an end-to-end, enterprise-grade, risk-aware document security and controlled sharing platform. Unlike conventional cloud storage and file-sharing solutions (such as Google Drive, Dropbox, or email attachments) that enforce a static, one-size-fits-all security model, SecureShare AI autonomously inspects the sensitivity and risk level of every uploaded document using **AI-driven OCR and Machine Learning**, dynamically generates **adaptive security policies**, and enforces **zero-trust recipient access gates** with forensic watermarking and immutable audit trails.
+**SecureShare AI** is an end-to-end, enterprise-grade, risk-aware document security and controlled sharing platform. Unlike conventional cloud storage and file-sharing solutions (such as Google Drive, Dropbox, or email attachments) that enforce a static, one-size-fits-all security model, SecureShare AI autonomously inspects the sensitivity and risk level of every uploaded document using **AI-driven OCR and Machine Learning**, dynamically generates **adaptive security policies**, and enforces **zero-trust recipient access gates** with forensic watermarking and immutable audit trails.
 
 ---
 
@@ -239,6 +239,7 @@ SecureShare AI operates on a deterministic, automated five-stage pipeline:
 |   Users Collection  |  Documents Collection  |  Shares  |  Audit Logs       |
 +-----------------------------------------------------------------------------+
 ```
+<img width="1198" height="1313" alt="Proj Idea" src="https://github.com/user-attachments/assets/74198f6a-8b8c-4f47-9736-812c656b6dcd" />
 
 ---
 ## 7. Adaptive Security Policy Matrix
@@ -386,7 +387,7 @@ ai-risk-based-secure-document-sharing/
 
 - **Node.js**: Version `18.0.0` or higher (Node 20+ LTS recommended)
 - **npm**: Version `9.0.0` or higher
-- **MongoDB**: Local MongoDB instance running on port `27017` OR a free [MongoDB Atlas](https://www.mongodb.com/atlas) cloud connection URI
+- **MongoDB Atlas**: A free [MongoDB Atlas](https://www.mongodb.com/atlas) cloud connection URI
 - *(Optional)* **Python 3.10+**: Only required if you wish to retrain the ML model in `backend/ml/`
 
 ---
@@ -421,7 +422,7 @@ cd ai-risk-based-secure-document-sharing
    ```env
    PORT=5001
    NODE_ENV=development
-   MONGO_URI=mongodb://127.0.0.1:27017/secureshare
+   MONGO_URI=mongodb+srv://<db_username>:<db_password>@cluster0.0t4ogy0.mongodb.net/
    JWT_SECRET=your_super_secret_jwt_key_here_at_least_32_characters
    JWT_EXPIRES_IN=7d
    FRONTEND_URL=http://localhost:5173
@@ -470,7 +471,7 @@ cd ai-risk-based-secure-document-sharing
 |---|---|---|
 | `PORT` | Port on which the Express server listens | `5001` |
 | `NODE_ENV` | Runtime environment mode | `development` / `production` |
-| `MONGO_URI` | Connection string for MongoDB database | `mongodb://127.0.0.1:27017/secureshare` |
+| `MONGO_URI` | Connection string for MongoDB Atlas database | `mongodb+srv://<db_username>:<db_password>@cluster0.0t4ogy0.mongodb.net/` |
 | `JWT_SECRET` | High-entropy secret key for signing JWTs | `your-32-char-random-secret` |
 | `JWT_EXPIRES_IN`| Validity duration for user sessions | `7d` |
 | `FRONTEND_URL` | Whitelisted URL for CORS cross-origin requests | `http://localhost:5173` |
@@ -561,7 +562,18 @@ cd ai-risk-based-secure-document-sharing
 - **Dynamic Watermarking:** Mitigates the classic "analog hole" (taking a picture of the screen) by embedding verifiable recipient identification directly into the rendered viewport.
 
 ---
+## 14. 🚀 Live Demo
 
-## 14. License
+- **Frontend (Live Website):** [RiskGuard Share](https://ai-risk-based-secure-document-shari.vercel.app/)
+- **Backend API:** [Render Backend](https://secureshare-ai-rqbg.onrender.com)
+- **API Health Check:** [Check Backend Status](https://secureshare-ai-rqbg.onrender.com/api/health)
+
+## 🛠️ Deployment
+
+- **Frontend:** Vercel
+- **Backend:** Render
+- **Database:** MongoDB Atlas
+
+## 15. License
 
 This project is developed for educational, academic, and demonstration purposes. You are free to use, modify, and extend this codebase for research and development.
