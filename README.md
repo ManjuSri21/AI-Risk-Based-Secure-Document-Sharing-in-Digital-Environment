@@ -562,7 +562,7 @@ cd ai-risk-based-secure-document-sharing
 - **Dynamic Watermarking:** Mitigates the classic "analog hole" (taking a picture of the screen) by embedding verifiable recipient identification directly into the rendered viewport.
 
 ---
-## 14. 🚀 Live Demo
+## 🚀 Live Demo
 
 - **Live Website:** [SecureShare](https://ai-risk-based-secure-document-shari.vercel.app/)
 
@@ -572,6 +572,6 @@ cd ai-risk-based-secure-document-sharing
 - **Backend:** Render
 - **Database:** MongoDB Atlas
 
-## 15. License
+## 14. License
 
 This project is developed for educational, academic, and demonstration purposes. You are free to use, modify, and extend this codebase for research and development.
