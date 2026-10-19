@@ -78,6 +78,14 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+app.get('/', (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: 'RiskGuard Share API is running',
+    health: '/api/health',
+  });
+});
+
 // API routes
 app.use('/api/auth', authRoutes);
 app.use('/api/documents', documentRoutes);
